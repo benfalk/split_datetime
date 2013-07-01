@@ -9,7 +9,7 @@ module SplitDatetime
       end
 
       attrs.each do |attr|
-        attr_accessible "#{attr}_date", "#{attr}_hour", "#{attr}_min"
+        attr_accessible "#{attr}_date", "#{attr}_hour", "#{attr}_min", "#{attr}_time"
 
         define_method(attr) do
           super() || opts[:default].call
@@ -24,6 +24,12 @@ module SplitDatetime
         define_method("#{attr}_hour=") do |hour|
           return unless hour.present?
           self.send("#{attr}=", self.send(attr).change(hour: hour, min: self.send(attr).min))
+        end
+        
+        define_method("#{attr}_time=") do |time|
+          return unless time.present?
+          time = DateTime.parse time unless time.is_a?(Date) or time.is_a?(Time)
+          self.send("#{attr}=", self.send(attr).change(hour: time.hour, min: time.min))
         end
 
         define_method("#{attr}_min=") do |min|
@@ -42,6 +48,11 @@ module SplitDatetime
         define_method("#{attr}_min") do
           self.send(attr).min
         end
+        
+        define_method("#{attr}_time") do
+          self.send(attr).to_time
+        end
+        
       end
     end
   end
